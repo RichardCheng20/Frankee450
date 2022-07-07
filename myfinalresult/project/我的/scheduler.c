@@ -66,6 +66,7 @@ int tcp_with_client(char* tcp_port) {
 
     // loop through all the results and bind to the first we can
     for(p = servinfo; p != NULL; p = p->ai_next) {
+        // 1.创建套接字描述符 客户服务都有
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                              p->ai_protocol)) == -1) {
             perror("server: socket");
@@ -77,7 +78,7 @@ int tcp_with_client(char* tcp_port) {
             perror("setsockopt");
             exit(1);
         }
-
+        // 2 bind套接字地址和套接字描述符联系起来，只有服务
         if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
             close(sockfd);
             perror("server: bind");
@@ -93,6 +94,7 @@ int tcp_with_client(char* tcp_port) {
         exit(1);
     }
 
+    // 3. 主动套接字转监听套接字，server才有
     if (listen(sockfd, BACKLOG) == -1) {
         perror("listen");
         exit(1);
@@ -143,7 +145,7 @@ int udp_with_hospital(char* udp_port) {
 
         break;
     }
-
+udp_with_hospital
     if (p == NULL) {
         fprintf(stderr, "listener: failed to bind socket\n");
         return 2;
@@ -192,6 +194,7 @@ int main(void)
          */
         // main accept() loop
         sin_size = sizeof their_addr;
+        // 4. accept等待客户端链接请求，返回已连接描述符， their_addr是客户端的套接字地址
         new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
         if (new_fd == -1) {
             perror("accept");
@@ -203,6 +206,7 @@ int main(void)
                   s, sizeof s);
         printf("server: got connection from %s\n", s);
 
+        //每一个连接请求到达监听描述符时，派生fork一个新的进程
         if (!fork()) { // this is the child process
             close(sockfd); // child doesn't need the listener
 
